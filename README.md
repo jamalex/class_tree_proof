@@ -6,8 +6,13 @@ I wrote an email to a friend about it.
 Below is the problem as I posed it to him.
 Then I thought up a solution, so I decided to make a Django app that demonstrated it.
 
+Terms
+----
+Sorry for potential confusion! However "teacher" is used interchangeably with "coach", and similarly "learner" is used
+interchangeably with "student".
+
 The Question
------
+----- 
 
 We have a hierarchical grouping of objects as in [this diagram](https://docs.google.com/drawings/d/1CI_li7fqYpymWDwbhpjkzpB9es76-nzH5lp4hm7akZA/edit).
 The root node is a class, which for children has one or more teachers.
@@ -39,9 +44,10 @@ class in advance! So you can't answer this in one query by for example asking if
 children of the class -- you don't *which* class to ask this about, so in the worst case you'd have to make one query 
 for *each* class.
 
+More types of questions
 ----
 
-P.S. More generally, as I indicated, the class might be one of many where the root node is a "school", and a school 
+More generally, the class might be one of many where the root node is a "school", and a school 
 can have one or more "principals" as children in addition to classes. The other questions I think can be reduced to 
 (A) above, but here they are for posterity:
 
@@ -49,13 +55,12 @@ can have one or more "principals" as children in addition to classes. The other 
 * (C) Are two learner groups both children of the same class?
 * (D) Are two students both children of the same class?
 
-The Answer
+(Almost) The Answer
 -----
 
 Make another tree like [this one](https://docs.google.com/drawings/d/1mnUVKryNqHRo8X6Rp86KVtRdQrtYyPA44P488wA5JXw/edit).
 Then you can answer (A) in 1 query, by asking if a student is the child of a teacher. Extend the tree to classes as
 children of schools (with principals) similarly.
-
 
 (B) and (C) are both answered in *at most* 2 queries -- see first if the first teacher is the child of the second, or if 
 it's not then see if the second is the child of the first. If yes to either, then the answer to the original is also 
@@ -63,3 +68,34 @@ yes, otherwise no. (Replace teacher with students or learner groups.)
 
 Finally (D) is answered in 2 queries -- find the class which is the parent of one student, then check if the other
 is also a child of that class.
+
+A Complication
+-----
+
+In reality we don't deal with students and teachers directly -- we deal with users, which may be mapped in some
+way to multiple students and teachers. In other words, a user might be a teacher for one class and a student for
+another, or a teacher for three classes, or any combination of student and teacher roles.
+
+The good news is that when you're curious about finding all the descendants for *several* teacher nodes, it *still* 
+just takes 1 query using the tree above if it's MPTT-encoded!
+
+(Actually) The Answer
+------
+
+Each node in the tree must carry a little extra information in order to keep the number of queries small.
+First a teacher or student node should know which user it's associated with, so we don't have to follow some foreign
+key relationship from nodes back to users. Secondly, each node should know it's "kind" as well -- whether it's a
+"student", "teacher", "learner group" or something else. If not, consider the following pathological 
+case:
+
+1. User 1 is a teacher for class A.
+2. User 2 is *also* a teacher for class A.
+3. Through some accident of insertion order, User 2's teacher node is a child of User 1's teacher node.
+
+Then if we *just* checked descendants, we'd erroneously assume that User 2 is a student of User 1. But if it's
+labeled as a "teacher" node we know that's not the case! Knowing the kind *also* helps us to build the tree in the 
+first place.
+
+Finally, in the given solution answering (A) actually takes 2 queries -- one to determine all coach nodes associated
+with a user, and then one to find all it's descendants matching certain constraints. If the coach nodes' ids are stored
+directly on the User model, one query could be avoided -- but then the database isn't normalized!

@@ -75,6 +75,7 @@ class User(models.Model):
         return self.is_learner_in_class_of_smart(user)
 
     def is_learner_in_class_of_naive(self, user):
+        # Takes a bunch of queries
         coach_nodes = Node.objects.filter(id__in=[c.node.id for c in user.coach_roles.all()])
         is_learner = [cn.get_descendants().filter(kind="learner", kind_id=self.id) for cn in coach_nodes]
         return any(is_learner)
