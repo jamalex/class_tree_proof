@@ -7,8 +7,10 @@ Below is the problem as I posed it to him.
 Then I thought up a solution, so I decided to make a Django app that demonstrated it.
 
 Read this explanation, look at tests.py, then look at models.py.
-Install with this cmd: `pip install -r requirements`
-You can run tests with this script: `manage.py test`
+
+Install with this cmd: `pip install -r requirements`.
+
+You can run tests with this script: `manage.py test`.
 
 Terms
 ----
@@ -42,7 +44,7 @@ Using the MPTT encoding, a lot of questions about trees require "at most one que
 3. All nodes of a given level?
 4. All leaf nodes?
 
-The question then is how to re-encode the first tree into a *different* tree, so that the equivalent of question (0A) 
+The question then is how to re-encode the first tree into a *different* tree, so that the equivalent of question (A) 
 takes at most 1 query. As I was writing this I panicked and thought it was a trivial problem, but you don't know the 
 class in advance! So you can't answer this in one query by for example asking if both the student and the teacher are 
 children of the class -- you don't *which* class to ask this about, so in the worst case you'd have to make one query 
