@@ -6,6 +6,10 @@ I wrote an email to a friend about it.
 Below is the problem as I posed it to him.
 Then I thought up a solution, so I decided to make a Django app that demonstrated it.
 
+Read this explanation, look at tests.py, then look at models.py.
+Install with this cmd: `pip install -r requirements`
+You can run tests with this script: `manage.py test`
+
 Terms
 ----
 Sorry for potential confusion! However "teacher" is used interchangeably with "coach", and similarly "learner" is used
