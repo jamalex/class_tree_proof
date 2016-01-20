@@ -22,7 +22,7 @@ class TestQueries(TestCase):
         cls.user2 = user2
 
     def test(self):
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(2):
             self.assertTrue(self.user2.is_learner_in_class_of(self.user1))
 
         with self.assertNumQueries(1):

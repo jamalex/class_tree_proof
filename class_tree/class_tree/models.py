@@ -81,12 +81,25 @@ class User(models.Model):
 
     def is_learner_in_class_of_smart(self, user):
         # 1 query to follow user-role relationship
-        coach_query = list(user.coach_roles.select_related('node').all().values('node'))
-        coach_node_ids = [i['node'] for i in coach_query]
-        # 2 queries -- 1 to get all "coach" nodes for the user, and another to check descendants!
-        # Can we reduce it to 1, by avoiding querying for the "coach" nodes and combining it with "get_descendants"?
-        is_learner = Node.objects.filter(id__in=coach_node_ids).get_descendants().filter(kind="learner", kind_id=self.id)
-        return any(is_learner)
+        coach_query = user.coach_roles.select_related('node').all()
+        # We get the lft and rght values so we can use them directly to get descendants, resulting in 1 query...
+        # Otherwise we'd first have to filter on the node.id and *then* get descendants, resulting in 2 queries.
+        coach_node_vals = [(i.node.lft, i.node.rght, i.node.tree_id) for i in coach_query]
+        big_q = []
+        for lft, rght, tree_id in coach_node_vals:
+            # little_q gets descendants. See https://github.com/django-mptt/django-mptt/blob/master/mptt/models.py#L566
+            little_q = models.Q(tree_id=tree_id) & models.Q(lft__gte=lft) & models.Q(lft__lte=rght)
+            if big_q:
+                # We OR each little_q together to get *all* descendants for the coach nodes in one query
+                big_q |= little_q
+            else:
+                big_q = little_q
+        if big_q:
+            # The AND finally asserts that the descendants contain the user.id we're looking for
+            learner_exists = any(Node.objects.filter(big_q & models.Q(kind="learner", kind_id=self.id)))
+        else:
+            learner_exists = False  # In this case, the given user wasn't a coach for *any* class
+        return learner_exists
 
 
 class Coach(CollectionOrRole):
