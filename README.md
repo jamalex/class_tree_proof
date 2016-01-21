@@ -112,3 +112,8 @@ The app `class_tree` implements the solution described above.
 
 The app `natural_tree` implements the same solution, but instead of using the modified tree structure it uses the 
 "natural" tree structure that the problem is initially framed in. This is to compare performance with `class_tree`.
+
+Conclusion from benchmarking
+------
+
+To my surprise both apps perform comparably for the `User.is_learner_in_class_of` method!
