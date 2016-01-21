@@ -26,11 +26,18 @@ class TestSanity(TestCase):
 
 
 class TestBenchmark(TestCase):
+    fixtures = ["treedump.json"]
+
+    def test_sanity(self):
+        facility = Collection.objects.get(type="facility")
+        self.assertEqual(facility.get_descendants().count() + Role.objects.count(), 6100)  # Magic number comes from make_tree cmd
+
+
     def test_is_learner_timing(self):
         random.seed(42)
         users = list(User.objects.all())
-        coaches = random.sample(users, 50)
-        avg_time = 0
+        coaches = users
+        tot_time = 0
         count = 0
 
         bar = progressbar.ProgressBar()
@@ -41,6 +48,7 @@ class TestBenchmark(TestCase):
                 learner.is_learner_in_class_of(coach)
                 end = time.time()
                 count += 1
-                avg_time = (avg_time*(count-1) + (end-start))/count
+                tot_time += (end-start)
 
-        print("Average time (ms) for `natural_tree` app's `User.is_learner_in_class_of` method: {}".format(avg_time))
+        avg_time = tot_time/count
+        print("Average time (s) for `natural_tree` app's \n\t`User.is_learner_in_class_of` method: {}".format(avg_time))
