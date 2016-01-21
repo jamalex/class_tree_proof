@@ -30,7 +30,7 @@ class TestBenchmark(TestCase):
                 count += 1
                 avg_time = (avg_time*(count-1) + (end-start))/count
 
-        print("Average time (ms): {}".format(avg_time))
+        print("Average time (ms) for `class_tree` app's `User.is_learner_in_class_of` method: {}".format(avg_time))
 
 
 class TestQueries(TestCase):
