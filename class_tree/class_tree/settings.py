@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'class_tree',
+    'natural_tree',
 ]
 
 MIDDLEWARE_CLASSES = [
