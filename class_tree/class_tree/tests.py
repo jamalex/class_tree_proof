@@ -1,5 +1,34 @@
+import random
+import time
+
 from django.test import TestCase
 from .models import *
+
+
+class TestBenchmark(TestCase):
+    fixtures = ["treedump.json"]
+
+    def test_sanity(self):
+        facility = Facility.objects.all().first()
+        self.assertEqual(facility.node.get_descendants().count(), 6100)  # Magic number comes from make_tree cmd
+
+    def test_is_learner_timing(self):
+        random.seed(42)
+        users = list(User.objects.all())
+        coaches = random.sample(users, 100)
+        learners = random.sample(users, 500)
+
+        avg_time = 0
+        count = 0
+        for coach in coaches:
+            for learner in learners:
+                start = time.time()
+                learner.is_learner_in_class_of(coach)
+                end = time.time()
+                count += 1
+                avg_time = (avg_time*(count-1) + (end-start))/count
+
+        print("Average time (ms): {}".format(avg_time))
 
 
 class TestQueries(TestCase):

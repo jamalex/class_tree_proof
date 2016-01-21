@@ -57,12 +57,20 @@ class CollectionOrRole(models.Model):
         coll.node.save()
 
 
+class Facility(CollectionOrRole):
+    def add_admin(self, fa):
+        self.add_role(fa, "admin")
+
+    def add_classroom(self, classroom):
+        self.add_subcollection(classroom)
+
+
 class Classroom(CollectionOrRole):
     def add_coach(self, coach):
         self.add_role(coach, "coach")
 
     def add_learner_group(self, lg):
-        return self.add_subcollection(lg)
+        self.add_subcollection(lg)
 
 
 class LearnerGroup(CollectionOrRole):
@@ -101,6 +109,10 @@ class User(models.Model):
         else:
             learner_exists = False  # In this case, the given user wasn't a coach for *any* class
         return learner_exists
+
+
+class Admin(CollectionOrRole):
+    user = models.ForeignKey(User, related_name='admin_roles')
 
 
 class Coach(CollectionOrRole):
