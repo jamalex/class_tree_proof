@@ -17,6 +17,8 @@ BC_BATCH_SIZE = 500
 class Command(BaseCommand):
     """
     Creates a tree structure that we can use as a fixture in tests.
+    Outputs "treedump.json" database dump in the current directory, that you can copy to the "fixtures" directory
+    of this app.
     """
     def handle(self, **options):
         # Some of the weird Model.object.get(id=instance.id).somemethod() calls are so that cached related objects
