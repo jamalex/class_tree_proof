@@ -1,3 +1,4 @@
+import progressbar
 import random
 import time
 
@@ -15,12 +16,13 @@ class TestBenchmark(TestCase):
     def test_is_learner_timing(self):
         random.seed(42)
         users = list(User.objects.all())
-        coaches = random.sample(users, 100)
-        learners = random.sample(users, 500)
-
+        coaches = random.sample(users, 50)
         avg_time = 0
         count = 0
-        for coach in coaches:
+
+        bar = progressbar.ProgressBar()
+        for coach in bar(coaches):
+            learners = random.sample(users, 50)
             for learner in learners:
                 start = time.time()
                 learner.is_learner_in_class_of(coach)
