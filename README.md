@@ -105,3 +105,10 @@ first place.
 Finally, in the given solution answering (A) actually takes 2 queries -- one to determine all coach nodes associated
 with a user, and then one to find all it's descendants matching certain constraints. If the coach nodes' ids are stored
 directly on the User model, one query could be avoided -- but then the database isn't normalized!
+
+The Apps here
+-------------
+The app `class_tree` implements the solution described above.
+
+The app `natural_tree` implements the same solution, but instead of using the modified tree structure it uses the 
+"natural" tree structure that the problem is initially framed in. This is to compare performance with `class_tree`.
