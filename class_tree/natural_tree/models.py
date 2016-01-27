@@ -8,12 +8,15 @@ class Collection(MPTTModel):
 
 
 class User(models.Model):
-    roles = models.ManyToManyField(Collection, through='Role', related_query_name='roles')
+    roles = models.ManyToManyField(Collection, through='Role')
 
-    def is_learner_in_class_of(self, user):
-        classes = Collection.objects.filter(role__user=user, role__type="coach", type="classroom")
+    def is_learner_in_class_of(self, coach):
+        classes = coach.my_classes()
         learners = classes.get_descendants().filter(role__user=self, role__type="learner")
         return any(learners)
+
+    def my_classes(self):
+        return Collection.objects.filter(role__user=self, role__type="coach", type="classroom")
 
 
 class Role(models.Model):
@@ -27,4 +30,9 @@ class RelatedObject(models.Model):
 
     @classmethod
     def all_that_user_has_perms_for(cls, coach: User):
-        pass
+        coaches_learner_roles = []
+        for learner_group in coach.my_classes().get_descendants():
+            coaches_learner_roles += learner_group.role_set.filter(type="learner")
+        return RelatedObject.objects.filter(user__in=User.objects.filter(
+            role__in=coaches_learner_roles
+        ))

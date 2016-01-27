@@ -9,7 +9,7 @@ from .models import *
 class TestRelatedObject(TestCase):
 
     def setUp(self):
-        classroom = Collection.objects.create()
+        classroom = Collection.objects.create(type="classroom")
         coach_user, learner_user = self.coach_user, self.learner_user = User.objects.create(), User.objects.create()
         lg = Collection.objects.create(type="learner_group", parent=classroom)
 
