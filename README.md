@@ -127,8 +127,8 @@ Related object benchmarking
  
 ```text
 Average time (s) for `natural_tree` app's
-        `RelatedObject.all_that_user_has_perms_for` method: 0.17189843320846557
-Standard deviation is 0.24769535759278996
+        `RelatedObject.all_that_user_has_perms_for` method: 0.16647429609298706
+Standard deviation is 0.2209921832619154
 ```
 
 ```text
@@ -140,4 +140,5 @@ Standard deviation is 0.011786503008821534
 You can replicate by running the `StressTestRelatedObject` tests found in each module.
 Note these tests take a long time to run (~260s) because there are a large # of related objects in the test fixture.
 
-In this case we see that `class_tree` is a clear winner -- but perhaps the query could be refined for `natural_tree`?
+In this case we see that `class_tree` is a clear winner, even after refining the `natural_tree` query and indexing
+natural_tree.Role fields together to (presumably) speed up lookup time.

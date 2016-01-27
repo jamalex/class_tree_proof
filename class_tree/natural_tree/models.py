@@ -21,8 +21,14 @@ class User(models.Model):
 
 class Role(models.Model):
     type = models.CharField(max_length=50)
-    collection = models.ForeignKey(Collection)
-    user = models.ForeignKey(User)
+    collection = models.ForeignKey(Collection, db_index=False)
+    user = models.ForeignKey(User, db_index=False)
+
+    class Meta:
+        index_together = [
+            ['collection', 'type'],
+            ['user', 'type'],
+        ]
 
 
 class RelatedObject(models.Model):
