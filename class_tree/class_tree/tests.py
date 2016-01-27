@@ -6,6 +6,29 @@ from django.test import TestCase
 from .models import *
 
 
+class StressTestRelatedObject(TestCase):
+    """
+    The intent of this test is to monitor the run time of finding related objects.
+    """
+
+    def test_timing(self):
+        random.seed(42)
+        users = list(User.objects.all())
+
+        tot_time = count = 0
+        bar = progressbar.ProgressBar()
+        for user in bar(users):
+            start = time.time()
+            _ = list(RelatedObject.all_that_user_has_perms_for(user))  # Force evaluation
+            end = time.time()
+            count += 1
+            tot_time += (end-start)
+
+        avg_time = tot_time/count
+        print("Average time (s) for `class_tree` app's \n\t`RelatedObject.all_that_user_has_perms_for` "
+              "method: {}".format(avg_time))
+
+
 class TestRelatedObject(TestCase):
 
     def setUp(self):
