@@ -1,3 +1,4 @@
+import math
 import progressbar
 import random
 import time
@@ -10,23 +11,32 @@ class StressTestRelatedObject(TestCase):
     """
     The intent of this test is to monitor the run time of finding related objects.
     """
+    fixtures = ["class_tree_ro_dump.json"]
+
+    def test_sanity(self):
+        facility = Facility.objects.all().first()
+        self.assertEqual(facility.node.get_descendants().count(), 3050)  # Magic number comes from make_tree cmd
+        self.assertEqual(RelatedObject.objects.count(), 1276972)
 
     def test_timing(self):
         random.seed(42)
         users = list(User.objects.all())
 
-        tot_time = count = 0
+        count = 0
+        times = []
         bar = progressbar.ProgressBar()
         for user in bar(users):
             start = time.time()
             _ = list(RelatedObject.all_that_user_has_perms_for(user))  # Force evaluation
             end = time.time()
             count += 1
-            tot_time += (end-start)
+            times.append(end-start)
 
-        avg_time = tot_time/count
+        avg_time = sum(times)/count
         print("Average time (s) for `class_tree` app's \n\t`RelatedObject.all_that_user_has_perms_for` "
               "method: {}".format(avg_time))
+        std_dev = math.sqrt(sum([(t - avg_time)**2 for t in times])/count)
+        print("Standard deviation is {}".format(std_dev))
 
 
 class TestRelatedObject(TestCase):
