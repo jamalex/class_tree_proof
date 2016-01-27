@@ -30,9 +30,7 @@ class RelatedObject(models.Model):
 
     @classmethod
     def all_that_user_has_perms_for(cls, coach: User):
-        coaches_learner_roles = []
-        for learner_group in coach.my_classes().get_descendants():
-            coaches_learner_roles += learner_group.role_set.filter(type="learner")
         return RelatedObject.objects.filter(user__in=User.objects.filter(
-            role__in=coaches_learner_roles
+            role__collection__in=coach.my_classes().get_descendants(),
+            role__type="learner"
         ))
