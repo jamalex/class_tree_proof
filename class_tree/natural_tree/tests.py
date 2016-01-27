@@ -6,6 +6,25 @@ from django.test import TestCase
 from .models import *
 
 
+class TestRelatedObject(TestCase):
+
+    def setUp(self):
+        classroom = Collection.objects.create()
+        coach_user, learner_user = self.coach_user, self.learner_user = User.objects.create(), User.objects.create()
+        lg = Collection.objects.create(type="learner_group", parent=classroom)
+
+        coach_role = Role.objects.create(user=coach_user, collection=classroom, type="coach")
+        learner_role = Role.objects.create(user=learner_user, collection=lg, type="learner")
+
+        self.related_object = RelatedObject.objects.create(user=learner_user)
+
+    def test_coach_perms(self):
+        self.assertEqual(self.related_object, RelatedObject.all_that_user_has_perms_for(self.coach_user).first())
+
+    def test_learner_perms(self):
+        self.assertFalse(RelatedObject.all_that_user_has_perms_for(self.learner_user))
+
+
 class TestSanity(TestCase):
     """
     Just checks that the User.is_learner_in_class_of method works as expected.

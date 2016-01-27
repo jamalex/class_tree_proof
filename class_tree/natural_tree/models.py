@@ -20,3 +20,11 @@ class Role(models.Model):
     type = models.CharField(max_length=50)
     collection = models.ForeignKey(Collection)
     user = models.ForeignKey(User)
+
+
+class RelatedObject(models.Model):
+    user = models.ForeignKey(User)
+
+    @classmethod
+    def all_that_user_has_perms_for(cls, coach: User):
+        pass
