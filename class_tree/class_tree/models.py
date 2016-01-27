@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 from mptt.models import MPTTModel, TreeForeignKey
 
 
@@ -89,8 +90,11 @@ class User(models.Model):
         return any(is_learner)
 
     def is_learner_in_class_of_smart(self, user):
+        return any(self.learner_nodes_in_class_of_queryset(user))
+
+    def learner_nodes_in_class_of_queryset(self, user):
         # 1 query to follow user-role relationship
-        coach_query = user.coach_roles.select_related('node').all()
+        coach_query = user.get_my_coach_nodes()
         # We get the lft and rght values so we can use them directly to get descendants, resulting in 1 query...
         # Otherwise we'd first have to filter on the node.id and *then* get descendants, resulting in 2 queries.
         coach_node_vals = [(i.node.lft, i.node.rght, i.node.tree_id) for i in coach_query]
@@ -105,10 +109,12 @@ class User(models.Model):
                 big_q = little_q
         if big_q:
             # The AND finally asserts that the descendants contain the user.id we're looking for
-            learner_exists = any(Node.objects.filter(big_q & models.Q(kind="learner", kind_id=self.id)))
+            return Node.objects.filter(big_q & models.Q(kind="learner", kind_id=self.id))
         else:
-            learner_exists = False  # In this case, the given user wasn't a coach for *any* class
-        return learner_exists
+            return Node.objects.none()
+
+    def get_my_coach_nodes(self):
+        return self.coach_roles.select_related('node').all()
 
 
 class Admin(CollectionOrRole):
@@ -121,3 +127,18 @@ class Coach(CollectionOrRole):
 
 class Learner(CollectionOrRole):
     user = models.ForeignKey(User, related_name='learner_roles')
+
+
+class RelatedObject(models.Model):
+    user = models.ForeignKey(User)
+
+    @classmethod
+    def all_that_user_has_perms_for(cls, coach: User):
+        coach_nodes = Node.objects.filter(id__in=coach.get_my_coach_nodes().values("node"))
+        if coach_nodes:
+            all_coaches_learners = User.objects.filter(
+              learner_roles__node__in=coach_nodes.get_descendants()
+            )
+        else:
+            all_coaches_learners = User.objects.none()
+        return RelatedObject.objects.filter(user__in=all_coaches_learners)

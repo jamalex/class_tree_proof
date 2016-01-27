@@ -6,8 +6,31 @@ from django.test import TestCase
 from .models import *
 
 
+class TestRelatedObject(TestCase):
+
+    def setUp(self):
+        classroom1 = Classroom.objects.create()
+        user1, user2 = self.user1, self.user2 = User.objects.create(), User.objects.create()
+        lg = LearnerGroup.objects.create()
+
+        coach = Coach.objects.create(user=user1)
+        learner = Learner.objects.create(user=user2)
+
+        classroom1.add_coach(coach)
+        classroom1.add_learner_group(lg)
+        lg.add_learner(learner)
+
+        self.related_object = RelatedObject.objects.create(user=user2)
+
+    def test_coach_perms(self):
+        self.assertEqual(self.related_object, RelatedObject.all_that_user_has_perms_for(self.user1).first())
+
+    def test_learner_perms(self):
+        self.assertFalse(RelatedObject.all_that_user_has_perms_for(self.user2))
+
+
 class TestBenchmark(TestCase):
-    fixtures = ["treedump.json"]
+    fixtures = ["class_treedump.json"]
 
     def test_sanity(self):
         facility = Facility.objects.all().first()
