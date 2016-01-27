@@ -16,7 +16,7 @@ class StressTestRelatedObject(TestCase):
     def test_sanity(self):
         facility = Facility.objects.all().first()
         self.assertEqual(facility.node.get_descendants().count(), 3050)  # Magic number comes from make_tree cmd
-        self.assertEqual(RelatedObject.objects.count(), 1276972)
+        self.assertEqual(RelatedObject.objects.count(), 120598)
 
     def test_timing(self):
         random.seed(42)
