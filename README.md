@@ -118,6 +118,36 @@ Conclusion from benchmarking
 
 To my surprise both apps perform comparably for the `User.is_learner_in_class_of` method!
 
+Update: For the class tree, I realized a constant-time improvement could be achieved by indexing some node fields
+together. Benchmarks below for reference:
+
+`python manage.py test class_tree.tests.TestBenchmark` **with** changes to indexing:
+```
+Average time (s) for `class_tree` app's
+        `User.is_learner_in_class_of` method: 0.0015831643199920654
+..
+----------------------------------------------------------------------
+Ran 2 tests in 88.856s
+```
+
+`python manage.py test class_tree.tests.TestBenchmark` **without** changes to indexing:
+```
+Average time (s) for `class_tree` app's
+        `User.is_learner_in_class_of` method: 0.003222175898551941
+..
+----------------------------------------------------------------------
+Ran 2 tests in 189.616s
+```
+
+`python manage.py test natural_tree.tests.TestBenchmark` for comparison:
+```
+Average time (s) for `natural_tree` app's
+        `User.is_learner_in_class_of` method: 0.0023021783781051637
+..
+----------------------------------------------------------------------
+Ran 2 tests in 122.718s
+```
+
 Related object benchmarking
 ---------------------------
 
