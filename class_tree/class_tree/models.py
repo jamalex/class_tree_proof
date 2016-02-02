@@ -8,8 +8,13 @@ class Node(MPTTModel):
     For children, all the roles come first, then collections.
     """
     parent = TreeForeignKey('self', null=True, blank=True, related_name='children', db_index=True)
-    kind = models.CharField(null=True, blank=True, max_length=100)
-    kind_id = models.IntegerField(null=True, blank=True)
+    kind = models.CharField(null=True, blank=True, max_length=100, db_index=False)
+    kind_id = models.IntegerField(null=True, blank=True, db_index=False)
+
+    class Meta:
+        index_together = [
+            ['kind', 'kind_id']
+        ]
 
     def __init__(self, *args, **kwargs):
         super(Node, self).__init__(*args, **kwargs)
