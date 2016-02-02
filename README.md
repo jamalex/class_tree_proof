@@ -151,7 +151,7 @@ Ran 2 tests in 122.718s
 Related object benchmarking
 ---------------------------
 
-`Related objects` are foreign-keyed to users. Once class of methods is to return all related objects that a user has
+`Related objects` are foreign-keyed to users. One class of methods is to return all related objects that a user has
  permissions to view. We benchmark time to get related objects in a for a large # of users with variable # of related
  objects:
  
