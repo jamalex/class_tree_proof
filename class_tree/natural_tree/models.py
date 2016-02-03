@@ -11,6 +11,27 @@ class User(models.Model):
     roles = models.ManyToManyField(Collection, through='Role')
 
     def is_learner_in_class_of(self, coach):
+        sql = '''
+        SELECT
+            COUNT(desc.id)
+        FROM
+            natural_tree_collection anc, natural_tree_collection desc
+        INNER JOIN
+            natural_tree_role coach_role, natural_tree_role learner_role
+        WHERE
+            coach_role.collection_id = anc.id AND
+            learner_role.collection_id = desc.id AND
+            coach_role.type = "coach" AND
+            learner_role.type = "learner" AND
+            coach_role.user_id = {coach_id} AND
+            learner_role.user_id = {learner_id} AND
+            desc.lft BETWEEN anc.lft AND anc.rght
+        '''.format(coach_id=coach.id, learner_id=self.id)
+        cursor = connection.cursor()
+        cursor.execute(sql)
+        return cursor.fetchone()[0] > 0
+
+    def is_learner_in_class_of_old(self, coach):
         classes = coach.my_classes()
         learners = classes.get_descendants().filter(role__user=self, role__type="learner")
         return any(learners)
