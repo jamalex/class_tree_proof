@@ -138,7 +138,7 @@ class RelatedObject(models.Model):
     user = models.ForeignKey(User)
 
     @classmethod
-    def all_that_user_has_perms_for(cls, coach: User):
+    def all_that_user_has_perms_for(cls, coach):
         coach_nodes = Node.objects.filter(id__in=coach.get_my_coach_nodes().values("node"))
         if coach_nodes:
             all_coaches_learners = User.objects.filter(

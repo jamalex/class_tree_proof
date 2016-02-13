@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connection
 from mptt.models import MPTTModel, TreeForeignKey
 
 
@@ -10,7 +10,7 @@ class Collection(MPTTModel):
 class User(models.Model):
     roles = models.ManyToManyField(Collection, through='Role')
 
-    def is_learner_in_class_of(self, coach):
+    def is_learner_in_class_of_count(self, coach):
         sql = '''
         SELECT
             COUNT(desc.id)
@@ -30,6 +30,42 @@ class User(models.Model):
         cursor = connection.cursor()
         cursor.execute(sql)
         return cursor.fetchone()[0] > 0
+
+    def is_learner_in_class_of(self, coach):
+
+        params = {
+            "role_table": Role._meta.db_table,
+            "collection_table": Collection._meta.db_table,
+            "user_column": Role._meta.get_field('user').column,
+            "collection_column": Role._meta.get_field('collection').column,
+            "ancestor_collection": "anc",
+            "descendent_collection": "desc",
+            "user_role": Role._meta.db_table,
+            "learner_role": "learner_role",
+            "learner_id": self.id, # change later
+            "user_id": coach.id, # change later
+        }
+
+        tables = [item.format(**params) for item in [
+            '"{collection_table}" AS "{ancestor_collection}"',
+            '"{collection_table}" AS "{descendent_collection}"',
+            '"{role_table}" AS "{learner_role}"',
+        ]]
+
+        conditions = [item.format(**params) for item in [
+            "{user_role}.{collection_column} = {ancestor_collection}.id",
+            "{user_role}.type != 'learner'",
+            "{user_role}.{user_column} = {user_id}",
+            "{learner_role}.{collection_column} = {descendent_collection}.id",
+            "{learner_role}.type = 'learner'",
+            "{learner_role}.{user_column} = {learner_id}",
+            "{descendent_collection}.lft BETWEEN {ancestor_collection}.lft AND {ancestor_collection}.rght",
+        ]]
+
+        queryset = Role.objects.extra(tables=tables, where=conditions)
+
+        return queryset.exists()
+
 
     def is_learner_in_class_of_old(self, coach):
         classes = coach.my_classes()
