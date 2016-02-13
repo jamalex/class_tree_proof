@@ -33,6 +33,7 @@ class User(models.Model):
 
     def is_learner_in_class_of(self, coach):
 
+        # consolidate the table/column names, and values, that will be used as context for building the query
         params = {
             "role_table": Role._meta.db_table,
             "collection_table": Collection._meta.db_table,
@@ -46,12 +47,14 @@ class User(models.Model):
             "user_id": coach.id, # change later
         }
 
+        # list out the tables (along with aliases) that we'll need for use in the WHERE clause
         tables = [item.format(**params) for item in [
             '"{collection_table}" AS "{ancestor_collection}"',
             '"{collection_table}" AS "{descendent_collection}"',
             '"{role_table}" AS "{learner_role}"',
         ]]
 
+        # list out the conditions for the WHERE clause
         conditions = [item.format(**params) for item in [
             "{user_role}.{collection_column} = {ancestor_collection}.id",
             "{user_role}.type != 'learner'",
@@ -62,8 +65,10 @@ class User(models.Model):
             "{descendent_collection}.lft BETWEEN {ancestor_collection}.lft AND {ancestor_collection}.rght",
         ]]
 
+        # execute the query, returning a queryset of all non-learner roles the coach has in relation to this learner
         queryset = Role.objects.extra(tables=tables, where=conditions)
 
+        # return True if any such roles exist, otherwise False
         return queryset.exists()
 
 
